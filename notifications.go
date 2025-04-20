@@ -66,7 +66,7 @@ func scanEmail(emailBody string) error {
 	}
 	jsonData, _ := json.Marshal(payload)
 
-	resp, err := http.Post("http://localhost:8000/predict", "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post("https://phishing-api-i4kq.onrender.com/predict", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}

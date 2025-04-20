@@ -24,12 +24,12 @@ func startAuth(c *fiber.Ctx) error {
 	}
 
 	authURL := fmt.Sprintf(
-		"https://login.microsoftonline.com/%s/oauth2/v2.0/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&state=12345",
+		"https://login.microsoftonline.com/%s/oauth2/v2.0/authorize?client_id=%s&response_type=code&redirect_uri=%s&response_mode=query&scope=%s&prompt=consent&state=12345",
 		os.Getenv("TENANT_ID"),
 		os.Getenv("CLIENT_ID"),
 		os.Getenv("REDIRECT_URI"),
 		scope,
-	)
+	)	
 
 	log.Println("Redirecting to Microsoft OAuth with scope:", scope)
 	return c.Redirect(authURL)

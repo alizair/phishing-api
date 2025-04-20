@@ -38,6 +38,21 @@ func predict(c *fiber.Ctx) error {
 	return c.JSON(results)
 }
 
+func whoami(c *fiber.Ctx) error {
+	token := tokenStore["user"]
+	req, _ := http.NewRequest("GET", "https://graph.microsoft.com/v1.0/me", nil)
+	req.Header.Add("Authorization", "Bearer "+token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, _ := io.ReadAll(resp.Body)
+	return c.SendString(string(body))
+}
+
 func main() {
 	
 	// Only load .env locally, skip in production
@@ -62,6 +77,8 @@ func main() {
 	app.Get("/notifications", handleNotification)
 	app.Post("/notifications", handleNotification)
 	app.Post("/predict", predict)
+	app.Get("/me", whoami)
+
 
 	log.Println("Server running on http://127.0.0.1:8000")
 

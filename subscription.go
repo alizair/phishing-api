@@ -21,7 +21,7 @@ func createSubscription(c *fiber.Ctx) error {
 	subReq := map[string]interface{}{
 		"changeType":         "created",
 		"notificationUrl":    os.Getenv("NOTIFICATION_URL"),
-		"resource":           "me/mailFolders('Inbox')/messages",
+		"resource": "users('<user-id>')/mailFolders('Inbox')/messages",
 		"expirationDateTime": time.Now().Add(1 * time.Hour).Format(time.RFC3339),
 		"clientState":        "secretClientValue",
 	}

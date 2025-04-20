@@ -60,5 +60,10 @@ func main() {
 	app.Post("/predict", predict)
 
 	log.Println("Server running on http://127.0.0.1:8000")
-	log.Fatal(app.Listen(":8000"))
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	log.Fatal(app.Listen(":" + port))
 }

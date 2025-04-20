@@ -1,16 +1,15 @@
 package main
 
 import (
-    "bytes"
-    "encoding/json"
-    "io"
-    "net/http"
-    "os"
-    "time"
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+	"os"
+	"time"
 
-    "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
 )
-
 
 func createSubscription(c *fiber.Ctx) error {
 	token := tokenStore["user"]
@@ -21,7 +20,7 @@ func createSubscription(c *fiber.Ctx) error {
 	subReq := map[string]interface{}{
 		"changeType":         "created",
 		"notificationUrl":    os.Getenv("NOTIFICATION_URL"),
-		"resource": "users('<user-id>')/mailFolders('Inbox')/messages",
+		"resource":           "users('6b851f57-f865-4e6c-98ca-e289230cbabc')/mailFolders('Inbox')/messages",
 		"expirationDateTime": time.Now().Add(1 * time.Hour).Format(time.RFC3339),
 		"clientState":        "secretClientValue",
 	}

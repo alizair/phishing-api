@@ -39,9 +39,12 @@ func predict(c *fiber.Ctx) error {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	
+	// Only load .env locally, skip in production
+	if os.Getenv("RENDER") == "" {
+		if err := godotenv.Load(); err != nil {
+			log.Println("Could not load .env file (probably running on Render)")
+		}
 	}
 
 	app := fiber.New()

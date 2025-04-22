@@ -1,11 +1,11 @@
 package main
 
 import (
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
-	"io"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -14,6 +14,34 @@ import (
 
 type EmailBatch struct {
 	Emails []string `json:"emails"`
+}
+
+type PhishingEmail struct {
+	ID         string  `json:"id"`
+	Subject    string  `json:"subject"`
+	Sender     string  `json:"sender"`
+	Date       string  `json:"date"`
+	Confidence float64 `json:"confidence"`
+	Status     string  `json:"status"` // "Phishing" or "Not Phishing"
+}
+
+var phishingEmails = []PhishingEmail{
+	{
+		ID:         "1",
+		Subject:    "Confirm your credentials",
+		Sender:     "badguy@phishy.com",
+		Date:       "2025-04-21 10:30 PM",
+		Confidence: 98.6,
+		Status:     "Phishing",
+	},
+	{
+		ID:         "2",
+		Subject:    "Weekly Report",
+		Sender:     "team@company.com",
+		Date:       "2025-04-20 09:15 AM",
+		Confidence: 10.2,
+		Status:     "Not Phishing",
+	},
 }
 
 func checkPhishing(emailBody string) string {
@@ -54,8 +82,12 @@ func whoami(c *fiber.Ctx) error {
 	return c.SendString(string(body))
 }
 
+func getPhishingEmails(c *fiber.Ctx) error {
+	return c.JSON(phishingEmails)
+}
+
 func main() {
-	
+
 	// Only load .env locally, skip in production
 	if os.Getenv("RENDER") == "" {
 		if err := godotenv.Load(); err != nil {
@@ -79,7 +111,7 @@ func main() {
 	app.Post("/notifications", handleNotification)
 	app.Post("/predict", predict)
 	app.Get("/me", whoami)
-
+	app.Get("/phishing-emails", getPhishingEmails)
 
 	log.Println("Server running on http://127.0.0.1:8000")
 

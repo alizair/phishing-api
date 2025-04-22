@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
 
@@ -44,12 +46,48 @@ var phishingEmails = []PhishingEmail{
 	},
 }
 
-func checkPhishing(emailBody string) string {
-	if rand.Float32() > 0.5 {
-		return "phishing"
+func checkPhishing(emailBody string) (string, error) {
+	payload := map[string][]string{
+		"emails": {emailBody},
 	}
-	return "safe"
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	resp, err := http.Post("http://localhost:8000/predict", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to call ML model: %v", err)
+	}
+	defer resp.Body.Close()
+
+	var result []string
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", fmt.Errorf("failed to decode prediction: %v", err)
+	}
+
+	if len(result) > 0 {
+		return result[0], nil
+	}
+	return "", fmt.Errorf("empty prediction response")
 }
+
+// func predict(c *fiber.Ctx) error {
+// 	var data EmailBatch
+// 	if err := c.BodyParser(&data); err != nil {
+// 		log.Println("Error parsing batch:", err)
+// 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+// 	}
+
+// 	results := []string{}
+// 	for _, body := range data.Emails {
+// 		results = append(results, checkPhishing(body))
+// 	}
+
+// 	log.Println("Emails scanned:", len(data.Emails))
+// 	return c.JSON(results)
+// }
 
 func predict(c *fiber.Ctx) error {
 	var data EmailBatch
@@ -60,7 +98,13 @@ func predict(c *fiber.Ctx) error {
 
 	results := []string{}
 	for _, body := range data.Emails {
-		results = append(results, checkPhishing(body))
+		result, err := checkPhishing(body)
+		if err != nil {
+			log.Println("Prediction failed:", err)
+			results = append(results, "error")
+		} else {
+			results = append(results, result)
+		}
 	}
 
 	log.Println("Emails scanned:", len(data.Emails))
